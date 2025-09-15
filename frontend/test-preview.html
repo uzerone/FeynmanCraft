@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Preview Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+        .test-controls {
+            margin: 10px 0;
+        }
+        input, button {
+            margin: 5px;
+            padding: 8px;
+        }
+        button {
+            background: #007cba;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #005a87;
+        }
+        #preview-container {
+            margin-top: 20px;
+            min-height: 400px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PDF Preview Integration Test</h1>
+        <p>This page tests the integration between the LaTeX MCP service and frontend PDF preview components.</p>
+        
+        <div class="test-section">
+            <h2>Step 1: Test MCP Service</h2>
+            <div class="test-controls">
+                <input type="text" id="tikz-input" placeholder="TikZ code" 
+                       value="\begin{tikzpicture} \draw (0,0) circle (1); \end{tikzpicture}" 
+                       style="width: 400px;">
+                <button onclick="testMCP()">Compile with MCP</button>
+            </div>
+            <div id="mcp-status"></div>
+            <div id="mcp-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Step 2: Test File Info API</h2>
+            <div class="test-controls">
+                <input type="text" id="file-id-input" placeholder="File ID from Step 1" style="width: 300px;">
+                <button onclick="testFileInfo()">Get File Info</button>
+            </div>
+            <div id="fileinfo-status"></div>
+            <div id="fileinfo-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Step 3: Test PDF Preview</h2>
+            <div class="test-controls">
+                <button onclick="testPreview()">Load PDF Preview</button>
+            </div>
+            <div id="preview-status"></div>
+            <div id="preview-container"></div>
+        </div>
+    </div>
+
+    <script>
+        const MCP_BASE_URL = 'http://localhost:8003';
+        let currentFileId = null;
+        let currentFileUrls = null;
+
+        async function testMCP() {
+            const tikzCode = document.getElementById('tikz-input').value;
+            const statusDiv = document.getElementById('mcp-status');
+            const resultDiv = document.getElementById('mcp-result');
+            
+            statusDiv.innerHTML = '<div class="status info">Compiling TikZ code...</div>';
+            
+            try {
+                const response = await fetch(`${MCP_BASE_URL}/mcp`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        jsonrpc: "2.0",
+                        id: "test-compile",
+                        method: "tools/call",
+                        params: {
+                            name: "latex_compile",
+                            arguments: {
+                                tikz: tikzCode,
+                                engine: "pdflatex"
+                            }
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.result && data.result.status === 'ok' && data.result.file_id) {
+                    currentFileId = data.result.file_id;
+                    currentFileUrls = {
+                        pdf_url: `${MCP_BASE_URL}/files/${currentFileId}/pdf`,
+                        svg_url: `${MCP_BASE_URL}/files/${currentFileId}/svg`,
+                        info_url: `${MCP_BASE_URL}/files/${currentFileId}/info`
+                    };
+                    
+                    document.getElementById('file-id-input').value = currentFileId;
+                    
+                    statusDiv.innerHTML = '<div class="status success">✅ Compilation successful!</div>';
+                    resultDiv.innerHTML = `
+                        <h4>Compilation Result:</h4>
+                        <p><strong>File ID:</strong> ${currentFileId}</p>
+                        <p><strong>Status:</strong> ${data.result.status}</p>
+                        <p><strong>Compilation time:</strong> ${data.result.metrics.latency_ms}ms</p>
+                        <p><strong>PDF URL:</strong> <a href="${currentFileUrls.pdf_url}" target="_blank">${currentFileUrls.pdf_url}</a></p>
+                        <p><strong>Info URL:</strong> <a href="${currentFileUrls.info_url}" target="_blank">${currentFileUrls.info_url}</a></p>
+                    `;
+                } else {
+                    statusDiv.innerHTML = '<div class="status error">❌ Compilation failed</div>';
+                    resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error">❌ Network error</div>';
+                resultDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testFileInfo() {
+            const fileId = document.getElementById('file-id-input').value || currentFileId;
+            const statusDiv = document.getElementById('fileinfo-status');
+            const resultDiv = document.getElementById('fileinfo-result');
+            
+            if (!fileId) {
+                statusDiv.innerHTML = '<div class="status error">Please provide a file ID</div>';
+                return;
+            }
+            
+            statusDiv.innerHTML = '<div class="status info">Loading file info...</div>';
+            
+            try {
+                const response = await fetch(`${MCP_BASE_URL}/files/${fileId}/info`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = '<div class="status success">✅ File info loaded</div>';
+                    resultDiv.innerHTML = `
+                        <h4>File Information:</h4>
+                        <p><strong>File ID:</strong> ${data.file_id}</p>
+                        <p><strong>Created:</strong> ${new Date(data.created_at * 1000).toLocaleString()}</p>
+                        <p><strong>Available formats:</strong> ${data.available_formats.join(', ')}</p>
+                        <p><strong>File sizes:</strong> ${JSON.stringify(data.file_sizes)}</p>
+                    `;
+                } else {
+                    statusDiv.innerHTML = '<div class="status error">❌ Failed to load file info</div>';
+                    resultDiv.innerHTML = `<p>Error: ${data.detail || 'Unknown error'}</p>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error">❌ Network error</div>';
+                resultDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testPreview() {
+            const fileId = document.getElementById('file-id-input').value || currentFileId;
+            const statusDiv = document.getElementById('preview-status');
+            const containerDiv = document.getElementById('preview-container');
+            
+            if (!fileId || !currentFileUrls) {
+                statusDiv.innerHTML = '<div class="status error">Please compile a diagram first</div>';
+                return;
+            }
+            
+            statusDiv.innerHTML = '<div class="status info">Loading PDF preview...</div>';
+            
+            try {
+                // Create a simple PDF viewer using an iframe as a fallback
+                containerDiv.innerHTML = `
+                    <div style="padding: 20px; text-align: center;">
+                        <h4>PDF Preview</h4>
+                        <p><strong>File ID:</strong> ${fileId}</p>
+                        <p><a href="${currentFileUrls.pdf_url}" target="_blank" style="color: #007cba; text-decoration: none;">🔗 Open PDF in new tab</a></p>
+                        <div style="margin: 20px 0;">
+                            <iframe src="${currentFileUrls.pdf_url}" 
+                                    width="100%" 
+                                    height="400" 
+                                    frameborder="0"
+                                    style="border: 1px solid #ddd; border-radius: 4px;">
+                                <p>Your browser does not support PDFs. 
+                                   <a href="${currentFileUrls.pdf_url}" target="_blank">Download the PDF</a>.</p>
+                            </iframe>
+                        </div>
+                        <p><small>In the React app, this would be rendered with the DiagramPreview component using PDF.js</small></p>
+                    </div>
+                `;
+                
+                statusDiv.innerHTML = '<div class="status success">✅ PDF preview loaded</div>';
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="status error">❌ Failed to load preview</div>';
+                containerDiv.innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+
+        // Auto-test on page load
+        window.onload = function() {
+            document.getElementById('mcp-status').innerHTML = '<div class="status info">Ready to test. Click "Compile with MCP" to start.</div>';
+        };
+    </script>
+</body>
+</html>

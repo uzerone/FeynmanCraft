@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ADK Test</title>
+</head>
+<body>
+    <h1>ADK API Test</h1>
+    <button onclick="testADK()">Test ADK</button>
+    <div id="output"></div>
+
+    <script>
+        async function testADK() {
+            const output = document.getElementById('output');
+            
+            try {
+                // First, create a session
+                const sessionResponse = await fetch('http://localhost:8000/apps/feynmancraft_adk/users/test_user/sessions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        state: {},
+                        events: []
+                    })
+                });
+                
+                const session = await sessionResponse.json();
+                output.innerHTML += '<p>Session created: ' + JSON.stringify(session) + '</p>';
+                
+                // Then run the agent
+                const runResponse = await fetch('http://localhost:8000/run', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        appName: "feynmancraft_adk",
+                        userId: "test_user", 
+                        sessionId: session.sessionId,
+                        newMessage: {
+                            parts: [{"text": "Generate Feynman diagram for electron-positron annihilation"}],
+                            role: "user"
+                        },
+                        streaming: false
+                    })
+                });
+                
+                const result = await runResponse.json();
+                output.innerHTML += '<p>Result: ' + JSON.stringify(result) + '</p>';
+                
+            } catch (error) {
+                output.innerHTML += '<p>Error: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>

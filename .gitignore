@@ -1,0 +1,121 @@
+# Project-specific
+/legacy
+.env
+/.claude
+/.playwright-mcp
+*.png
+/playwright-mcp
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# Environments
+.env.local
+.env.development
+.env.test
+.env.production
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# BigQuery credentials
+service-account-key.json
+*.json.key
+
+# Local data
+*.ann.bak
+*.json.bak
+gemini-fullstack-langgraph-quickstart/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env*
+frontend/public/generated/
+
+# Generated test files
+test_*.pdf
+test_*.svg
+test_*.png
+test_*.html
+test_*.json
+
+# LaTeX MCP generated files
+*.tex
+*.aux
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+
+# Logs and temporary files  
+logs-*.txt
+*.log
+logs/
+nohup.out
+
+# Process ID files
+*.pid
+
+# HTML test files
+test_*.html

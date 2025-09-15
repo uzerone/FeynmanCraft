@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "LaTeX Compilation Monitor",
+  "description": "Monitors changes to the LaTeX compiler module and automatically runs unit tests to verify compilation functionality, generating test reports with success rates across different diagram types",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "feynmancraft_adk/tools/latex_compiler.py"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The LaTeX compiler module has been modified. Please run comprehensive unit tests to verify LaTeX compilation functionality is working correctly. Generate a detailed test report showing compilation success rates across different diagram types (QED, QCD, electroweak, etc.). Include error analysis for any failed compilations and verify that both pdflatex and lualatex compilation paths are functioning properly. Test with various TikZ-Feynman diagram complexities and ensure proper error handling and validation."
+  }
+}

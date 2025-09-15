@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Physics Rules Validation",
+  "description": "Automatically validates JSON format, runs physics rule consistency checks, and updates corresponding embedding vectors in the knowledge base when physics rules are modified",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "feynmancraft_adk/data/pprules.json"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The physics rules file feynmancraft_adk/data/pprules.json has been modified. Please:\n\n1. Validate the JSON format and structure of the updated pprules.json file\n2. Run physics rule consistency checks to ensure all rules are logically coherent and follow particle physics principles\n3. Update the corresponding embedding vectors in feynmancraft_adk/data/embeddings/rules_embeddings.pkl to maintain search accuracy\n4. Verify that the physics validation tools can properly access and use the updated rules\n5. Report any validation errors or inconsistencies found during the process\n\nThis ensures the physics rules database remains accurate and the knowledge base search functionality continues to work properly."
+  }
+}

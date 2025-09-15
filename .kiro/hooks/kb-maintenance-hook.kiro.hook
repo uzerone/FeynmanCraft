@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Knowledge Base Maintenance",
+  "description": "Automatically generates embeddings for new physics examples, updates the Annoy search index, and runs validation tests when entries are added to the knowledge base",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "feynmancraft_adk/data/feynman_kb.json"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "The knowledge base file feynmancraft_adk/data/feynman_kb.json has been modified. Please:\n\n1. Generate embeddings for any new physics examples that were added\n2. Update the Annoy search index (feynmancraft_adk/data/feynman_kb.ann) with the new embeddings\n3. Update the ID mapping file (feynmancraft_adk/data/feynman_kb_id_map.json) if needed\n4. Run validation tests to ensure retrieval quality is maintained and the search functionality works correctly\n5. Verify that the embedding cache (feynmancraft_adk/data/embeddings/kb_embeddings.pkl) is properly updated\n\nUse the existing embedding management tools in feynmancraft_adk/tools/kb/ to perform these operations. Ensure all changes maintain the integrity of the knowledge base retrieval system."
+  }
+}

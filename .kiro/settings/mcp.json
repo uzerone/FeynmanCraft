@@ -1,0 +1,25 @@
+{
+  "mcpServers": {
+    "physics-research": {
+      "command": "uvx",
+      "args": ["mcp-server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "your-api-key-here"
+      },
+      "disabled": false,
+      "autoApprove": ["search"]
+    },
+    "latex-filesystem": {
+      "command": "mcp-server-filesystem",
+      "args": ["--allowed-dir", "./feynmancraft_adk/data", "--allowed-dir", "./feynmancraft_adk/tools"],
+      "disabled": false,
+      "autoApprove": ["read_file", "list_directory"]
+    },
+    "web-fetch": {
+      "command": "uvx",
+      "args": ["mcp-server-fetch"],
+      "disabled": false,
+      "autoApprove": ["fetch"]
+    }
+  }
+}

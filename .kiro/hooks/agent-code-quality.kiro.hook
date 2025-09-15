@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Agent Code Quality Assurance",
+  "description": "Automatically runs code style checks, validates multi-agent collaboration patterns, and ensures prompt engineering follows established standards when Python files in sub_agents/ directory are saved",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "feynmancraft_adk/sub_agents/*.py"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A Python file in the sub_agents/ directory has been modified. Please perform the following quality assurance checks:\n\n1. **Code Style Analysis**: Check for PEP 8 compliance, proper imports, docstring standards, and consistent naming conventions\n2. **Multi-Agent Pattern Validation**: Ensure the agent follows the established ADK architecture patterns including proper Pydantic model usage, agent interface compliance, and integration with the orchestration framework\n3. **Prompt Engineering Standards**: Validate that any prompt templates or AI model interactions follow our established patterns for gemini-2.0-flash usage (or gemini-2.5-pro for DeepResearchAgent), proper prompt structure, and cost-efficient model selection\n4. **Physics Domain Compliance**: Verify that physics-related code adheres to our particle physics validation rules and integrates properly with MCP tools\n5. **Documentation Quality**: Check that code is properly documented with clear docstrings and inline comments explaining physics concepts where applicable\n\nProvide specific recommendations for any issues found and suggest improvements to maintain our high code quality standards."
+  }
+}
